@@ -59,7 +59,7 @@
 <body>
   <div class="container">
     <h1>✅ Mr Omar's To-Do</h1>
-    <p class="date" id="dateLabel"></p>
+
     <button class="info-toggle" id="infoToggle">ℹ️ Important Notes</button>
     <div class="info-box" id="infoBox">
       <p>👋 <strong>Hi Mr Omar!</strong> This checklist was made for you by Souga.</p>
@@ -160,10 +160,7 @@
       render();
     }
 
-    const d = new Date();
-    document.getElementById("dateLabel").textContent = d.toLocaleDateString("en-GB", {
-      weekday: "long", year: "numeric", month: "long", day: "numeric"
-    });
+
 
     render();
 
