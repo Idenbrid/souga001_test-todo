@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Things To Do - 25/03/26</title>
+  <title>To-Do Checklist</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -12,151 +12,133 @@
       min-height: 100vh;
       padding: 16px;
     }
-    .container {
-      max-width: 600px;
-      margin: 0 auto;
+    .container { max-width: 600px; margin: 0 auto; }
+    h1 { font-size: 1.4rem; color: #1a1a2e; margin-bottom: 4px; }
+    .date { font-size: 0.9rem; color: #666; margin-bottom: 16px; }
+    .add-form {
+      display: flex; gap: 8px; margin-bottom: 16px;
     }
-    h1 {
-      font-size: 1.4rem;
-      color: #1a1a2e;
-      margin-bottom: 4px;
+    .add-form input {
+      flex: 1; padding: 12px 14px; border: 2px solid #e5e7eb;
+      border-radius: 10px; font-size: 1rem; outline: none;
+      transition: border-color 0.2s;
     }
-    .date {
-      font-size: 0.9rem;
-      color: #666;
-      margin-bottom: 16px;
+    .add-form input:focus { border-color: #16a34a; }
+    .add-form button {
+      background: #16a34a; color: #fff; border: none;
+      border-radius: 10px; padding: 0 20px; font-size: 1.4rem;
+      cursor: pointer; transition: background 0.2s;
     }
+    .add-form button:active { background: #15803d; }
+    .progress-label { font-size: 0.82rem; color: #888; margin-bottom: 6px; }
+    .progress { background: #e5e7eb; border-radius: 8px; height: 6px; margin-bottom: 16px; overflow: hidden; }
+    .progress-bar { background: #16a34a; height: 100%; width: 0%; transition: width 0.4s ease; border-radius: 8px; }
     .task {
-      background: #fff;
-      border-radius: 12px;
-      padding: 14px 16px;
-      margin-bottom: 10px;
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      background: #fff; border-radius: 12px; padding: 14px 16px;
+      margin-bottom: 10px; display: flex; align-items: flex-start;
+      gap: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);
       transition: opacity 0.3s;
     }
-    .task.done {
-      opacity: 0.5;
-    }
-    .task.done .task-text {
-      text-decoration: line-through;
-      color: #999;
-    }
-    .task input[type="checkbox"] {
-      width: 22px;
-      height: 22px;
-      margin-top: 2px;
-      accent-color: #16a34a;
-      flex-shrink: 0;
-      cursor: pointer;
-    }
-    .task-content {
-      flex: 1;
-    }
-    .task-text {
-      font-size: 1rem;
-      color: #1a1a2e;
-      line-height: 1.4;
-    }
-    .task-detail {
-      font-size: 0.82rem;
-      color: #888;
-      margin-top: 2px;
-    }
-    .num {
-      font-size: 0.82rem;
-      color: #aaa;
-      min-width: 24px;
-      text-align: right;
-      margin-top: 3px;
-      flex-shrink: 0;
-    }
-    .progress {
-      background: #e5e7eb;
-      border-radius: 8px;
-      height: 6px;
-      margin-bottom: 16px;
-      overflow: hidden;
-    }
-    .progress-bar {
-      background: #16a34a;
-      height: 100%;
-      width: 0%;
-      transition: width 0.4s ease;
-      border-radius: 8px;
-    }
-    .progress-label {
-      font-size: 0.82rem;
-      color: #888;
-      margin-bottom: 6px;
-    }
-  </style>
+    .task.done { opacity: 0.5; }
+    .task.done .task-text { text-decoration: line-through; color: #999; }
+    .task.done .task-detail { text-decoration: line-through; }
+</style>
 </head>
 <body>
   <div class="container">
-    <h1>📋 Things To Do</h1>
-    <p class="date">25 / 03 / 2026 — Wednesday</p>
-    <p class="progress-label" id="progressLabel">0 / 11 completed</p>
+    <h1>✅ To-Do Checklist</h1>
+    <p class="date" id="dateLabel"></p>
+    <div class="add-form">
+      <input type="text" id="newTask" placeholder="Add new task..." aria-label="New task">
+      <button id="addBtn" aria-label="Add task">+</button>
+    </div>
+    <p class="progress-label" id="progressLabel"></p>
     <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
     <div id="tasks"></div>
   </div>
-  <script>
-    const tasks = [
-      { text: "Justice Shahid", detail: "QC + Swatch + Final Citrus" },
-      { text: "Zaini Cola", detail: "POP + Budget" },
-      { text: "Ali Xelestan", detail: "Agreement / Business Plan" },
-      { text: "Ali Salman", detail: "Call" },
-      { text: "Finance Meeting", detail: "March Closing" },
-      { text: "Anees BB Meeting", detail: "" },
-      { text: "Mehrband", detail: "Monday Next Week" },
-      { text: "Mastar Motors", detail: "Changan Damani" },
-      { text: "Satcha / Piranha Meeting", detail: "Thu 1 PM" },
-      { text: "Manchili Feasibility", detail: "" },
-      { text: "Anai's Bhurban", detail: "" }
+<script>
+    const STORAGE_KEY = "todo_checklist_v2";
+
+    const defaultTasks = [
+      { text: "Justice Shahid", detail: "QC + Swatch + Final Citrus", done: false },
+      { text: "Zaini Cola", detail: "POP + Budget", done: false },
+      { text: "Ali Xelestan", detail: "Agreement / Business Plan", done: false },
+      { text: "Ali Salman", detail: "Call", done: false },
+      { text: "Finance Meeting", detail: "March Closing", done: false },
+      { text: "Anees BB Meeting", detail: "", done: false },
+      { text: "Mehrband", detail: "Monday Next Week", done: false },
+      { text: "Mastar Motors", detail: "Changan Damani", done: false },
+      { text: "Satcha / Piranha Meeting", detail: "Thu 1 PM", done: false },
+      { text: "Manchili Feasibility", detail: "", done: false },
+      { text: "Anai's Bhurban", detail: "", done: false }
     ];
 
-    const STORAGE_KEY = "todo_done_25032026";
-
-    function loadState() {
-      try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
-      catch { return []; }
+    function loadTasks() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        return saved && saved.length ? saved : JSON.parse(JSON.stringify(defaultTasks));
+      } catch { return JSON.parse(JSON.stringify(defaultTasks)); }
     }
 
-    function saveState(done) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(done));
+    function saveTasks(tasks) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
     }
 
     function render() {
-      const done = loadState();
+      const tasks = loadTasks();
       const container = document.getElementById("tasks");
       container.innerHTML = "";
+
       tasks.forEach((t, i) => {
-        const checked = done.includes(i);
         const div = document.createElement("div");
-        div.className = "task" + (checked ? " done" : "");
+        div.className = "task" + (t.done ? " done" : "");
         div.innerHTML = `
-          <span class="num">${i + 1}</span>
-          <input type="checkbox" ${checked ? "checked" : ""} aria-label="Mark ${t.text} as done">
-          <div class="task-content">
-            <div class="task-text">${t.text}</div>
-            ${t.detail ? `<div class="task-detail">${t.detail}</div>` : ""}
-          </div>`;
+          <input type="checkbox" ${t.done ? "checked" : ""} 
+            style="width:22px;height:22px;margin-top:2px;accent-color:#16a34a;flex-shrink:0;cursor:pointer"
+            aria-label="Mark ${t.text} as done">
+          <div style="flex:1">
+            <div class="task-text" style="font-size:1rem;color:#1a1a2e;line-height:1.4">${t.text}</div>
+            ${t.detail ? `<div class="task-detail" style="font-size:0.82rem;color:#888;margin-top:2px">${t.detail}</div>` : ""}
+          </div>
+          <button style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:#ccc;padding:4px"
+            aria-label="Delete ${t.text}">🗑</button>`;
+
         div.querySelector("input").addEventListener("change", () => {
-          const d = loadState();
-          if (d.includes(i)) d.splice(d.indexOf(i), 1); else d.push(i);
-          saveState(d);
-          render();
+          const ts = loadTasks(); ts[i].done = !ts[i].done; saveTasks(ts); render();
+        });
+        div.querySelector("button").addEventListener("click", () => {
+          if (confirm("Delete \"" + t.text + "\"?")) {
+            const ts = loadTasks(); ts.splice(i, 1); saveTasks(ts); render();
+          }
         });
         container.appendChild(div);
       });
-      const count = done.length;
-      document.getElementById("progressLabel").textContent = `${count} / ${tasks.length} completed`;
-      document.getElementById("progressBar").style.width = `${(count / tasks.length) * 100}%`;
+
+      const doneCount = tasks.filter(t => t.done).length;
+      document.getElementById("progressLabel").textContent = `${doneCount} / ${tasks.length} completed`;
+      document.getElementById("progressBar").style.width = tasks.length ? `${(doneCount / tasks.length) * 100}%` : "0%";
     }
 
+    document.getElementById("addBtn").addEventListener("click", addTask);
+    document.getElementById("newTask").addEventListener("keydown", e => { if (e.key === "Enter") addTask(); });
+
+    function addTask() {
+      const input = document.getElementById("newTask");
+      const text = input.value.trim();
+      if (!text) return;
+      const tasks = loadTasks();
+      tasks.push({ text, detail: "", done: false });
+      saveTasks(tasks);
+      input.value = "";
+      render();
+    }
+
+    const d = new Date();
+    document.getElementById("dateLabel").textContent = d.toLocaleDateString("en-GB", {
+      weekday: "long", year: "numeric", month: "long", day: "numeric"
+    });
+
     render();
-  </script>
+</script>
 </body>
 </html>
