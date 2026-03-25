@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>To-Do Checklist</title>
+  <title>Mr Omar's To-Do Checklist</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -42,15 +42,40 @@
     .task.done { opacity: 0.5; }
     .task.done .task-text { text-decoration: line-through; color: #999; }
     .task.done .task-detail { text-decoration: line-through; }
+    .info-toggle {
+      background: none; border: none; font-size: 0.85rem; color: #16a34a;
+      cursor: pointer; padding: 0; margin-bottom: 12px; text-decoration: underline;
+    }
+    .info-box {
+      background: #fff; border-radius: 12px; padding: 14px 16px;
+      margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      font-size: 0.85rem; color: #555; line-height: 1.6; display: none;
+    }
+    .info-box.open { display: block; }
+    .info-box p { margin-bottom: 8px; }
+    .info-box p:last-child { margin-bottom: 0; }
 </style>
 </head>
 <body>
   <div class="container">
-    <h1>✅ To-Do Checklist</h1>
+    <h1>✅ Mr Omar's To-Do</h1>
     <p class="date" id="dateLabel"></p>
-    <div class="add-form">
-      <input type="text" id="newTask" placeholder="Add new task..." aria-label="New task">
+    <button class="info-toggle" id="infoToggle">ℹ️ Important Notes</button>
+    <div class="info-box" id="infoBox">
+      <p>👋 <strong>Hi Mr Omar!</strong> This checklist was made for you by Souga.</p>
+      <p>📌 This app is <strong>public</strong> (hosted for free on GitHub Pages). Anyone with the link can see this page, but your data is private to your device.</p>
+      <p>💾 Data is saved in your <strong>browser's local storage</strong> — not in a database. This means:</p>
+      <p>✅ Same phone + same browser = your data stays.</p>
+      <p>❌ Different device or different browser = data is NOT shared.</p>
+      <p>❌ If you clear browser data, your tasks will be reset.</p>
+      <p>➕ You can add new tasks using the input field and "+" button above.</p>
+      <p>🗑 You can delete tasks by tapping the trash icon on each item.</p>
+    </div>
+    <div class="add-form" style="flex-wrap:wrap">
+      <input type="text" id="newTask" placeholder="Task name..." aria-label="New task" style="flex:1;min-width:0">
       <button id="addBtn" aria-label="Add task">+</button>
+      <input type="text" id="newDetail" placeholder="Details / date (optional)" aria-label="Task detail"
+        style="flex-basis:100%;padding:10px 14px;border:2px solid #e5e7eb;border-radius:10px;font-size:0.9rem;outline:none;margin-top:-8px;transition:border-color 0.2s">
     </div>
     <p class="progress-label" id="progressLabel"></p>
     <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
@@ -124,12 +149,14 @@
 
     function addTask() {
       const input = document.getElementById("newTask");
+      const detailInput = document.getElementById("newDetail");
       const text = input.value.trim();
       if (!text) return;
       const tasks = loadTasks();
-      tasks.push({ text, detail: "", done: false });
+      tasks.push({ text, detail: detailInput.value.trim(), done: false });
       saveTasks(tasks);
       input.value = "";
+      detailInput.value = "";
       render();
     }
 
@@ -139,6 +166,10 @@
     });
 
     render();
+
+    document.getElementById("infoToggle").addEventListener("click", () => {
+      document.getElementById("infoBox").classList.toggle("open");
+    });
 </script>
 </body>
 </html>
